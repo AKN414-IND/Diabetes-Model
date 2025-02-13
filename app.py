@@ -3,24 +3,35 @@ from flask_cors import CORS
 import pandas as pd
 import joblib
 import os
+import logging
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
 
 # Load the model
 try:
-    model = joblib.load('model.pkl')
-    print("Model loaded successfully!")
+    model = joblib.load('diabetes_prediction_model.pkl')
+    logger.info("Model loaded successfully!")
 except Exception as e:
-    print(f"Error loading model: {str(e)}")
+    logger.error(f"Error loading model: {str(e)}")
     model = None
 
 @app.route('/', methods=['GET'])
 def home():
+    model_status = model is not None
+    logger.info(f"Home endpoint accessed. Model loaded: {model_status}")
     return jsonify({
         "status": "success",
         "message": "Diabetes Prediction API is running",
-        "model_loaded": model is not None,
+        "model_loaded": model_status,
+        "model_version": "1.6.1",
         "how_to_use": {
             "endpoint": "/predict",
             "method": "POST",
@@ -40,6 +51,7 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
+        logger.error("Prediction attempted but model is not loaded")
         return jsonify({
             'status': 'error',
             'message': 'Model not loaded'
@@ -47,6 +59,7 @@ def predict():
 
     try:
         data = request.get_json()
+        logger.info(f"Received prediction request with data: {data}")
         
         if not data:
             return jsonify({
@@ -68,15 +81,20 @@ def predict():
         
         # Make prediction
         prediction = model.predict(input_data)
+        probability = model.predict_proba(input_data)[0]
         result = 'Diabetic' if prediction[0] == 1 else 'Non-diabetic'
         
-        return jsonify({
+        response = {
             'status': 'success',
             'prediction': result,
+            'confidence': float(max(probability)),
             'input_received': data
-        })
+        }
+        logger.info(f"Prediction made successfully: {response}")
+        return jsonify(response)
     
     except Exception as e:
+        logger.error(f"Error during prediction: {str(e)}")
         return jsonify({
             'status': 'error',
             'message': str(e),
