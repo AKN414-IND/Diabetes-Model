@@ -1,7 +1,7 @@
 import requests
 
 # Define the API endpoint
-url = 'http://127.0.0.1:5000/api/predict'  # Adjust if your API is hosted elsewhere
+url = 'http://192.168.1.2:8000/api/predict'  # Adjust if your API is hosted elsewhere
 
 # Sample data for testing
 test_data = [
