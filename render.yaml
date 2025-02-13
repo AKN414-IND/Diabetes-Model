@@ -1,0 +1,14 @@
+Name: Diabetes-Model
+Owner: AKN414-IND
+Root Directory: / (leave empty)
+Environment: Python 3
+Branch: main
+Region: Oregon (US West)
+
+Build Settings:
+Build Command: pip install -r requirements.txt
+Start Command: gunicorn app:app --workers 1 --timeout 120 --bind 0.0.0.0:$PORT
+
+Environment Variables:
+PORT: 10000
+PYTHON_VERSION: 3.9.18
