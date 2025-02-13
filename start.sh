@@ -7,4 +7,5 @@ echo "Training and saving new model..."
 python train_model.py
 
 echo "Starting server..."
-gunicorn app:app --workers 1 --timeout 120 --bind 0.0.0.0:$PORT
+export PORT=10000
+gunicorn --bind 0.0.0.0:$PORT app:app --workers 1 --timeout 120 --log-level info
