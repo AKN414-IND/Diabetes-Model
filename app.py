@@ -13,6 +13,7 @@ try:
     print("Model loaded successfully!")
 except Exception as e:
     print(f"Error loading model: {str(e)}")
+    model = None
 
 @app.route('/', methods=['GET'])
 def home():
@@ -38,8 +39,13 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    if model is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'Model not loaded'
+        }), 500
+
     try:
-        # Get JSON data
         data = request.get_json()
         
         if not data:
@@ -48,17 +54,6 @@ def predict():
                 'message': 'No input data provided'
             }), 400
 
-        required_fields = ['gender', 'age', 'hypertension', 'heart_disease', 
-                         'smoking_history', 'bmi', 'HbA1c_level', 'blood_glucose_level']
-        
-        # Check if all required fields are present
-        for field in required_fields:
-            if field not in data:
-                return jsonify({
-                    'status': 'error',
-                    'message': f'Missing required field: {field}'
-                }), 400
-        
         # Create DataFrame
         input_data = pd.DataFrame({
             'gender': [data['gender']],
